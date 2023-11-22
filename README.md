@@ -10,7 +10,7 @@ roslaunch iiwa_description display_iiwa.launch
 ```
 ### Cinematica directa 
 
-![alt text]([(https://github.com/davelm31/Proyecto-LBR-iiwa-14/blob/main/Cinematica%20directa.png)])
+![alt text]([https://github.com/davelm31/Proyecto-LBR-iiwa-14/blob/main/Cinematica%20directa.png)])
 
 Lista de parámetros DH:
 
