@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+import rospy
+from sensor_msgs.msg import JointState
+
+from markers import *
+from functions import *
+
+if __name__ == '__main__':
+
+  rospy.init_node("testForwardKinematics")
+  pub = rospy.Publisher('joint_states', JointState, queue_size=1)
+  bmarker      = BallMarker(color['RED'])
+  bmarker_des  = BallMarker(color['GREEN'])
+
+  # Joint names
+  #joint 8 va de 0 a 0.3
+  jnames = ['iiwa_joint_1', 'iiwa_joint_2', 'iiwa_joint_3','iiwa_joint_4', 'iiwa_joint_5', 'iiwa_joint_6', 'iiwa_joint_7', 'iiwa_joint_8']
+ 
+  # Joint Configuration
+  #q = [0 ,0, 0, 0, 0, 0 ,0 ,0.15]
+  # Initial configuration
+  # =========== Caso 1 ============================
+  #q = np.array([0.4 ,1.0, 1.7, -1, -1.6, 1.5, 0 ,0.3])
+  #xd = np.array([-0.4, 0.3, 0.5])
+  # =========== Caso 2 ============================
+  #q = np.array([1.1 ,0.3, 1, 1, -0.6, 1.5, 2 ,0.15])
+  #xd = np.array([0.2, 0, 1.2])
+  # =========== Caso 3 ============================
+  #q = np.array([-1.1 ,0, 1.35, 0.6, -0.6, -1, 0.78 ,0.3])
+  #xd = np.array([0.5, -0.3, 0.75])
+  q = np.array([-1.1 ,0, 1.35, 0.6, -0.6, -1, 0.78 ,0.2])
+  xd = np.array([0.5, -0.3, 0.75])
+
+  # End effector with respect to the base
+  T = fkine_iiwa(q)
+  print( np.round(T, 3) )
+  bmarker.position(T)
+  bmarker_des.xyz(xd)
+
+  # Object (message) whose type is JointState
+  jstate = JointState()
+  # Set values to the message
+  jstate.header.stamp = rospy.Time.now()
+  jstate.name = jnames
+  # Add the head joint value (with value 0) to the joints
+  jstate.position = q
+
+  # Loop rate (in Hz)
+  rate = rospy.Rate(20)
+  # Continuous execution loop
+  while not rospy.is_shutdown():
+    # Current time (needed for ROS)
+    jstate.header.stamp = rospy.Time.now()
+    # Publish the message
+    pub.publish(jstate)
+    bmarker.publish()
+    # Wait for the next iteration
+    rate.sleep()

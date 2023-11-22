@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+
+import rospy
+from sensor_msgs.msg import JointState
+from markers import *
+from functions import *
+
+if __name__ == '__main__':
+
+    rospy.init_node("testInvKine")
+    pub = rospy.Publisher('joint_states', JointState, queue_size=1)
+
+    bmarker      = BallMarker(color['RED'])
+    bmarker_des  = BallMarker(color['GREEN'])
+
+    # Joint names
+    jnames = ['iiwa_joint_1', 'iiwa_joint_2'	, 'iiwa_joint_3','iiwa_joint_4', 'iiwa_joint_5', 'iiwa_joint_6', 'iiwa_joint_7', 'iiwa_joint_8']
+
+    # Desired position
+
+    # Initial configuration
+    # =========== Caso 1 ============================
+    #q0 = np.array([0.4 ,1.0, 1.7, -1, -1.6, 1.5, 0 ,0.3])
+    #xd = np.array([-0.4, 0.3, 0.5])
+    # =========== Caso 2 ============================
+    #q0 = np.array([1.1 ,0.3, 1, 1, -0.6, 1.5, 2 ,0.3])
+    #xd = np.array([0.2, 0, 1.2])
+    # =========== Caso 3 ============================
+    q0 = np.array([-1.1 ,0, 1.35, 0.6, -0.6, -1, 0.78 ,0.3])
+    xd = np.array([0.5, -0.3, 0.75])
+    # Initial configuration
+
+    # Inverse kinematics
+    q = ikine_iiwa14(xd, q0)
+  
+    
+    if (q[0]< -2.82 or q[0]> 2.82 or
+        q[1]< -1.99 or q[1]> 1.99 or 
+        q[2]< -2.82 or q[2]> 2.82 or 
+        q[3]< -1.99 or q[3]> 1.99 or 
+        q[4]< -2.82 or q[4]> 2.82 or 
+        q[5]< -1.99 or q[5]> 1.99 or 
+        q[6]< -2.90 or q[6]> 2.90 or 
+        q[7] < 0 or  q[7]>0.3):
+       print("Punto deseado fuera de alcance")
+       print(q)
+       
+       # Resulting position (end effector with respect to the base link)
+       T = fkine_iiwa(q0)
+       xc = T[0:3,3]
+       bmarker.xyz(T[0:3,3])
+       # Green marker shows the desired position
+       bmarker_des.xyz(xd)
+       # Objeto (mensaje) de tipo JointState
+       jstate = JointState()
+       # Asignar valores al mensaje
+       jstate.header.stamp = rospy.Time.now()
+       jstate.name = jnames
+       # Add the head joint value (with value 0) to the joints
+       jstate.position = q0
+       
+       # Loop rate (in Hz)
+       rate = rospy.Rate(20)
+    else:
+    	# Resulting position (end effector with respect to the base link)
+    	T = fkine_iiwa(q)
+    	print('Obtained value:\n', np.round(T,3))
+    	# Red marker shows the achieved position
+    	xc = T[0:3,3]
+    	bmarker.xyz(T[0:3,3])
+    	# Green marker shows the desired position
+    	bmarker_des.xyz(xd)
+
+    	# Objeto (mensaje) de tipo JointState
+    	jstate = JointState()
+    	# Asignar valores al mensaje
+    	jstate.header.stamp = rospy.Time.now()
+    	jstate.name = jnames
+    	# Add the head joint value (with value 0) to the joints
+    	jstate.position = q
+
+    	# Loop rate (in Hz)
+    	freq = 20
+    	rate = rospy.Rate(20)
+    	
+    freq = 20
+    dt = 1.0/freq
+    t = 0
+    
+    # Continuous execution loop
+    while not rospy.is_shutdown():
+        # Current time (needed for ROS)
+        jstate.header.stamp = rospy.Time.now()
+        # Publish the message
+        pub.publish(jstate)
+        bmarker.publish()
+        bmarker_des.publish()
+        t = t+dt
+        # Wait for the next iteration
+        rate.sleep()
+    
