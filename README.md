@@ -28,24 +28,5 @@ Lista de parámetros DH:
 
 ### Archivos
 ```
-.
-└── root/
-    └── iiwa_ros
-         └── iiwa_description
-            ├── launch/
-            │   ├── controller.launch
-            │   ├── controller.yaml
-            │   ├── display.launch
-            │   ├── gazebo.launch
-            │   ├── urdf.rviz
-            ├── meshes/
-            └── src/
-            │   ├── control_dinInv.py (Control dinamico operacional)
-            │   ├── control_dinInv2.py (Control dinamico articular)
-            │   ├── markers.py
-            │   ├── functions.py (Funciones utiles)
-            │   ├── test_din.py (Comprobación de modelo dinámico)
-            │   ├── test_fkine.py (Cinemática directa)
-            │   ├── test_ikine.py (Cinemática inversa)
-            └── urdf/
+
 ```
